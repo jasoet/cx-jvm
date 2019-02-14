@@ -4,15 +4,8 @@ MAINTAINER gopay-system <gopay-systems@go-jek.com>
 ENV LANG en_US.UTF-8
 
 RUN update-ca-certificates \
-    && add-apt-repository -y ppa:openjdk-r \
     && apt-get update --fix-missing \
-    && apt-get install -y apt-transport-https ca-certificates curl software-properties-common jq figlet python \
-    && apt-get install -y openjdk-11-jdk openjdk-11-jre openjdk-11-jdk-headless openjdk-11-jre-headless \
-    && apt-get install -y maven gradle libffi-dev
-
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/' /etc/java-11-openjdk/security/java.security \
-    && rm /etc/ssl/certs/java/cacerts \
-    && /var/lib/dpkg/info/ca-certificates-java.postinst configure
+    && apt-get install -y apt-transport-https ca-certificates curl software-properties-common jq figlet python zip wget
 
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
@@ -40,3 +33,12 @@ RUN docker login -u docker -p docker artifactory-gojek.golabs.io:6555
 RUN gcloud auth activate-service-account --key-file /tmp/gitlabrunnersvcaccount.json
 
 RUN rm -f /tmp/gitlabrunnersvcaccount.json
+
+COPY sdkman-install.sh /
+RUN chmod +x sdkman-install.sh
+RUN bash sdkman-install.sh
+
+COPY entrypoint.sh /
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+

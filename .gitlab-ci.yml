@@ -6,7 +6,8 @@ docker-build-and-push:
   script:
     - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:latest -t asia.gcr.io/systems-0001/cx-docker-package:latest -f Dockerfile .
     - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
-    - docker push asia.gcr.io/systems-0001/cx-docker-package:latest
+    - gcloud docker -- push asia.gcr.io/systems-0001/cx-docker-package:latest
   tags:
-    - systems-runner
+    - gopay
+    - packager
 
