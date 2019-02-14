@@ -7,6 +7,8 @@ variables:
 docker-build-and-push:
   stage: build_and_push_to_registry
   script:
+    - java -version
+    - gradle -version
     - gcloud auth configure-docker
     - docker pull asia.gcr.io/systems-0001/cx-base:latest
     - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:${CX_IMAGE_VERSION} -t asia.gcr.io/systems-0001/cx-docker-package:${CX_IMAGE_VERSION} -f Dockerfile .
