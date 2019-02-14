@@ -4,6 +4,7 @@ stages:
 docker-build-and-push:
   stage: build_and_push_to_registry
   script:
+    - gcloud docker -- pull asia.gcr.io/systems-0001/cx-base:latest
     - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:latest -t asia.gcr.io/systems-0001/cx-docker-package:latest -f Dockerfile .
     - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
     - gcloud docker -- push asia.gcr.io/systems-0001/cx-docker-package:latest
