@@ -1,13 +1,19 @@
 stages:
   - build_and_push_to_registry
 
+variables:
+  CX_IMAGE_VERSION: 1.0.0
+
 docker-build-and-push:
   stage: build_and_push_to_registry
   script:
     - gcloud auth configure-docker
     - docker pull asia.gcr.io/systems-0001/cx-base:latest
+    - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:${CX_IMAGE_VERSION} -t asia.gcr.io/systems-0001/cx-docker-package:${CX_IMAGE_VERSION} -f Dockerfile .
     - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:latest -t asia.gcr.io/systems-0001/cx-docker-package:latest -f Dockerfile .
+    - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:${CX_IMAGE_VERSION}
     - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
+    - docker push asia.gcr.io/systems-0001/cx-docker-package:${CX_IMAGE_VERSION}
     - docker push asia.gcr.io/systems-0001/cx-docker-package:latest
   tags:
     - gopay
