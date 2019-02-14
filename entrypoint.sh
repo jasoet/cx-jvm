@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "##### Enable sdkman executable #####"
 export SDKMAN_DIR="/root/.sdkman"
