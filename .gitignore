@@ -1,0 +1,11 @@
+# Plan file
+plan
+# Compiled files
+*.tfstate
+*.tfstate.backup
+
+# Module directory
+.terraform/
+terraform.tfvars
+.DS_Store
+.idea/
