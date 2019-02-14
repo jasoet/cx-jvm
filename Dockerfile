@@ -6,7 +6,9 @@ ENV LANG en_US.UTF-8
 RUN update-ca-certificates \
     && apt-get update --fix-missing \
     && apt-get install -y apt-transport-https ca-certificates curl \
-    && apt-get install -y software-properties-common jq figlet python zip wget build-essential make autoconf automake
+    && apt-get install -y software-properties-common jq figlet python zip wget build-essential make autoconf automake \
+    && apt-get install -y ruby ruby-dev rubygems \
+    && gem install --no-ri --no-rdoc fpm
 
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
