@@ -8,5 +8,5 @@ docker-build-and-push:
     - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
     - docker push asia.gcr.io/systems-0001/cx-docker-package:latest
   tags:
-    - docker_artifactory
-    - docker_gcr
+    - systems-runner
+
