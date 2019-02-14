@@ -4,6 +4,13 @@ echo "##### Enable sdkman executable #####"
 export SDKMAN_DIR="/root/.sdkman"
 [[ -s "/root/.sdkman/bin/sdkman-init.sh" ]] && source "/root/.sdkman/bin/sdkman-init.sh"
 
-echo "##### Execute Command! #####"
-exec $@
+echo "##### Execute Command! ${@} #####"
+
+if [[ -x /bin/sh ]]; then
+    exec $@
+else
+    echo shell not found
+    exit 1
+fi
+
 
