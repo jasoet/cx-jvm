@@ -1,18 +1,12 @@
 stages:
-  - deploy
+  - build_and_push_to_registry
 
-variables:
-  DOCKER_TAG: java.ci.cd.image
-
-package:
-  stage: deploy
+docker-build-and-push:
+  stage: build_and_push_to_registry
+  script:
+    - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:latest -t asia.gcr.io/systems-0001/cx-docker-package:latest -f Dockerfile .
+    - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
+    - docker push asia.gcr.io/systems-0001/cx-docker-package:latest
   tags:
-    - docker
     - docker_artifactory
     - docker_gcr
-  script:
-    - docker build -t artifactory-gojek.golabs.io:6555/cx-docker-package:latest .
-    - docker push artifactory-gojek.golabs.io:6555/cx-docker-package:latest
-  only:
-    - master
-
