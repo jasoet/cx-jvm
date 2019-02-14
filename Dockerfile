@@ -5,7 +5,8 @@ ENV LANG en_US.UTF-8
 
 RUN update-ca-certificates \
     && apt-get update --fix-missing \
-    && apt-get install -y apt-transport-https ca-certificates curl software-properties-common jq figlet python zip wget
+    && apt-get install -y apt-transport-https ca-certificates curl \
+    && apt-get install software-properties-common jq figlet python zip wget build-essential make autoconf automake
 
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
