@@ -6,8 +6,6 @@ variables:
 
 docker-build-and-push:
   stage: build_and_push_to_registry
-  before_script: 
-    - source $HOME/.sdkman/bin/sdkman-init.sh
   script:
     - java -version
     - gradle -version
