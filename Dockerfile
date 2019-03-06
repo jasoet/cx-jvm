@@ -1,18 +1,27 @@
-FROM asia.gcr.io/systems-0001/cx-base:latest
+FROM ubuntu:18.04
 MAINTAINER gopay-system <gopay-systems@go-jek.com>
 
 ENV LANG en_US.UTF-8
 
-RUN update-ca-certificates \
+ENV SDKMAN_DIR=/root/.sdkman
+
+RUN set -x \
     && apt-get update --fix-missing \
     && apt-get install -y apt-transport-https ca-certificates curl \
     && apt-get install -y software-properties-common jq figlet python zip wget build-essential make autoconf automake
 
-COPY sdkman-install.sh /
-RUN chmod +x sdkman-install.sh
-RUN bash sdkman-install.sh
+RUN set -x && \
+    curl -s "https://get.sdkman.io" | bash && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config && \
+    echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config && \
+    echo "sdkman_insecure_ssl=true" >> $SDKMAN_DIR/etc/config
 
-COPY entrypoint.sh /
-RUN chmod +x entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+COPY cx /usr/local/bin/cx
+RUN chmod +x /usr/local/bin/cx
 
+SHELL ["/bin/bash", "-c"]
+RUN cx sdk install java
+RUN cx sdk install gradle
+
+ENTRYPOINT ["/usr/local/bin/cx"]
