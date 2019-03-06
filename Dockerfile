@@ -2,15 +2,6 @@ FROM azul/zulu-openjdk:11
 
 ENV LANG en_US.UTF-8
 
-ENV GRADLE_HOME /opt/gradle
-ENV GRADLE_VERSION 5.2.1
-
-ENV KOTLIN_HOME /opt/kotlin
-ENV KOTLIN_VERSION 1.3.21
-
-ENV MAVEN_HOME /opt/maven
-ENV MAVEN_VERSION 3.6.0
-
 # Install apt dependencies
 RUN set -x \
     && apt-get update --fix-missing \
@@ -22,6 +13,18 @@ RUN set -o errexit -o nounset \
     && groupadd --system --gid 1000 jvm \
     && useradd --system --gid jvm --uid 1000 --shell /bin/bash --create-home jvm \
     && chown --recursive jvm:jvm /home/jvm/
+
+ENV GRADLE_HOME /opt/gradle
+ENV GRADLE_VERSION 5.2.1
+
+ENV KOTLIN_HOME /opt/kotlin
+ENV KOTLIN_VERSION 1.3.21
+
+ENV MAVEN_HOME /opt/maven
+ENV MAVEN_VERSION 3.6.0
+
+ENV KSCRIPT_HOME /opt/kscript
+ENV KSCRIPT_VERSION 2.7.1
 
 # Install Kotlin
 RUN set -o errexit -o nounset \
@@ -36,13 +39,9 @@ RUN set -o errexit -o nounset \
     && chown --recursive jvm:jvm "${KOTLIN_HOME}/"
 
 # Install Gradle
-ARG GRADLE_DOWNLOAD_SHA256=748c33ff8d216736723be4037085b8dc342c6a0f309081acf682c9803e407357
 RUN set -o errexit -o nounset \
     && echo "Downloading Gradle" \
     && wget --no-verbose --output-document=gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
-    \
-    && echo "Checking download hash" \
-    && echo "${GRADLE_DOWNLOAD_SHA256} *gradle.zip" | sha256sum --check - \
     \
     && echo "Installing Gradle" \
     && unzip gradle.zip \
@@ -54,7 +53,6 @@ RUN set -o errexit -o nounset \
     && chown --recursive jvm:jvm /home/jvm/.gradle \
     && chown --recursive jvm:jvm "${GRADLE_HOME}/" \
     \
-    && echo "Symlinking root Gradle cache to gradle Gradle cache" \
     && ln -s /home/jvm/.gradle /root/.gradle
 
 # Install MAVEN
@@ -73,8 +71,25 @@ RUN set -o errexit -o nounset \
     && chown --recursive jvm:jvm /home/jvm/.m2 \
     && chown --recursive jvm:jvm "${MAVEN_HOME}/" \
     \
-    && echo "Symlinking root Gradle cache to gradle Gradle cache" \
     && ln -s /home/jvm/.m2 /root/.m2
+
+# Install Kscript
+RUN set -o errexit -o nounset \
+    && echo "Downloading Kscript" \
+    && wget --no-verbose --output-document=kscript.zip "https://github.com/holgerbrandl/kscript/releases/download/v${KSCRIPT_VERSION}/kscript-${KSCRIPT_VERSION}-bin.zip" \
+    \
+    && echo "Installing KScript" \
+    && unzip kscript.zip \
+    && rm kscript.zip \
+    && mv "kscript-${KSCRIPT_VERSION}" "${KSCRIPT_HOME}/" \
+    && ln --symbolic "${KSCRIPT_HOME}/bin/kscript" /usr/bin/kscript \
+    && ln --symbolic "${KSCRIPT_HOME}/bin/kscript.jar" /usr/bin/kscript.jar \
+    \
+    && mkdir /home/jvm/.kscript \
+    && chown --recursive jvm:jvm /home/jvm/.kscript \
+    && chown --recursive jvm:jvm "${KSCRIPT_HOME}/" \
+    \
+    && ln -s /home/jvm/.kscript /root/.kscript
 
 # Register all Path
 ENV PATH "$PATH:${KOTLIN_HOME}/bin"
@@ -87,5 +102,6 @@ WORKDIR /home/jvm
 RUN set -o errexit -o nounset \
     && echo "Testing Gradle installation" \
     && gradle --version \
-    && kotlinc -v \
-    && mvn -v
+    && kotlinc -version \
+    && mvn -v \
+    && kscript -v
