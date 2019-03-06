@@ -111,18 +111,39 @@ RUN set -o errexit -o nounset \
     && ln -s /home/jvm/.lein /root/.lein \
     && lein
 
+# Install SBT
+RUN set -o errexit -o nounset \
+    && echo "Installing Sbt" \
+    && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
+    && apt-get update \
+    && apt-get -y install sbt \
+    \
+    && mkdir /home/jvm/.sbt \
+    && chown --recursive jvm:jvm /home/jvm/.sbt \
+    \
+    && ln -s /home/jvm/.sbt /root/.sbt \
+    && sbt version
+
 # Register all Path
 ENV PATH "$PATH:${KOTLIN_HOME}/bin"
 
 # Create jvm volume
 USER jvm
-VOLUME "/home/jvm/.gradle" "/home/jvm/.m2" "/home/jvm/.lein"
+VOLUME "/home/jvm/.gradle" "/home/jvm/.m2" "/home/jvm/.lein" "/home/jvm/.sbt" "/home/jvm/.kscript"
 WORKDIR /home/jvm
 
+# APT Cleanup
 RUN set -o errexit -o nounset \
-    && echo "Testing Gradle installation" \
+    && apt-get clean autoclean \
+    && apt-get autoremove --yes \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
+# Testing Instalation
+RUN set -o errexit -o nounset \
     && gradle --version \
     && kotlinc -version \
     && mvn -v \
     && lein version \
-    && kscript -v
+    && kscript -v \
+    && sbt about
