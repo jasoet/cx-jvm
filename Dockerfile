@@ -26,6 +26,8 @@ ENV MAVEN_VERSION 3.6.0
 ENV KSCRIPT_HOME /opt/kscript
 ENV KSCRIPT_VERSION 2.7.1
 
+ENV LEININGEN_HOME /opt/leiningen
+
 # Install Kotlin
 RUN set -o errexit -o nounset \
     && echo "Download Kotlin" \
@@ -91,12 +93,30 @@ RUN set -o errexit -o nounset \
     \
     && ln -s /home/jvm/.kscript /root/.kscript
 
+# Install Leiningen
+RUN set -o errexit -o nounset \
+    && echo "Downloading Leiningen" \
+    && wget --no-verbose --output-document=lein "https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein" \
+    \
+    && echo "Installing Leiningen" \
+    && mkdir -p "${LEININGEN_HOME}/bin" \
+    && mv "lein" "${LEININGEN_HOME}/bin/lein" \
+    && chmod +x "${LEININGEN_HOME}/bin/lein" \
+    && ln --symbolic "${LEININGEN_HOME}/bin/lein" /usr/bin/lein \
+    \
+    && mkdir /home/jvm/.lein \
+    && chown --recursive jvm:jvm /home/jvm/.lein \
+    && chown --recursive jvm:jvm "${KSCRIPT_HOME}/" \
+    \
+    && ln -s /home/jvm/.lein /root/.lein \
+    && lein
+
 # Register all Path
 ENV PATH "$PATH:${KOTLIN_HOME}/bin"
 
 # Create jvm volume
 USER jvm
-VOLUME "/home/jvm/.gradle" "/home/jvm/.m2"
+VOLUME "/home/jvm/.gradle" "/home/jvm/.m2" "/home/jvm/.lein"
 WORKDIR /home/jvm
 
 RUN set -o errexit -o nounset \
@@ -104,4 +124,5 @@ RUN set -o errexit -o nounset \
     && gradle --version \
     && kotlinc -version \
     && mvn -v \
+    && lein version \
     && kscript -v
