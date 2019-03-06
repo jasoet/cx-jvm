@@ -8,6 +8,9 @@ ENV GRADLE_VERSION 5.2.1
 ENV KOTLIN_HOME /opt/kotlin
 ENV KOTLIN_VERSION 1.3.21
 
+ENV MAVEN_HOME /opt/maven
+ENV MAVEN_VERSION 3.6.0
+
 # Install apt dependencies
 RUN set -x \
     && apt-get update --fix-missing \
@@ -49,18 +52,40 @@ RUN set -o errexit -o nounset \
     \
     && mkdir /home/jvm/.gradle \
     && chown --recursive jvm:jvm /home/jvm/.gradle \
+    && chown --recursive jvm:jvm "${GRADLE_HOME}/" \
     \
     && echo "Symlinking root Gradle cache to gradle Gradle cache" \
     && ln -s /home/jvm/.gradle /root/.gradle
 
+# Install MAVEN
+RUN set -o errexit -o nounset \
+    && echo "Downloading Maven" \
+    && wget --no-verbose --output-document=maven.zip "https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.zip" \
+    \
+    && echo "Installing Maven" \
+    && unzip maven.zip \
+    && rm maven.zip \
+    && mv "apache-maven-${MAVEN_VERSION}" "${MAVEN_HOME}/" \
+    && ln --symbolic "${MAVEN_HOME}/bin/mvn" /usr/bin/mvn \
+    && ln --symbolic "${MAVEN_HOME}/bin/mvnDebug" /usr/bin/mvnDebug \
+    \
+    && mkdir /home/jvm/.m2 \
+    && chown --recursive jvm:jvm /home/jvm/.m2 \
+    && chown --recursive jvm:jvm "${MAVEN_HOME}/" \
+    \
+    && echo "Symlinking root Gradle cache to gradle Gradle cache" \
+    && ln -s /home/jvm/.m2 /root/.m2
+
+# Register all Path
 ENV PATH "$PATH:${KOTLIN_HOME}/bin"
 
 # Create jvm volume
 USER jvm
-VOLUME "/home/jvm/.gradle"
+VOLUME "/home/jvm/.gradle" "/home/jvm/.m2"
 WORKDIR /home/jvm
 
 RUN set -o errexit -o nounset \
     && echo "Testing Gradle installation" \
     && gradle --version \
-    && kotlinc -v
+    && kotlinc -v \
+    && mvn -v
