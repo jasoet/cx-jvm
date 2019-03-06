@@ -26,6 +26,9 @@ ENV MAVEN_VERSION 3.6.0
 ENV KSCRIPT_HOME /opt/kscript
 ENV KSCRIPT_VERSION 2.7.1
 
+ENV SBT_HOME /opt/sbt
+ENV SBT_VERSION 1.2.8
+
 ENV LEININGEN_HOME /opt/leiningen
 
 # Install Kotlin
@@ -111,6 +114,24 @@ RUN set -o errexit -o nounset \
     && ln -s /home/jvm/.lein /root/.lein \
     && lein
 
+# Install Sbt
+RUN set -o errexit -o nounset \
+    && echo "Downloading Sbt" \
+    && wget --no-verbose --output-document=sbt.zip "https://piccolo.link/sbt-${SBT_VERSION}.zip" \
+    \
+    && echo "Installing Sbt" \
+    && unzip sbt.zip \
+    && rm sbt.zip \
+    && mv "sbt" "${SBT_HOME}/" \
+    && ln --symbolic "${SBT_HOME}/bin/sbt" /usr/bin/sbt \
+    && ln --symbolic "${SBT_HOME}/bin/sbt-launch.jar" /usr/bin/sbt-launch.jar \
+    \
+    && mkdir /home/jvm/.sbt \
+    && chown --recursive jvm:jvm /home/jvm/.sbt \
+    && chown --recursive jvm:jvm "${SBT_HOME}/" \
+    \
+    && ln -s /home/jvm/.sbt /root/.sbt
+
 # Register all Path
 ENV PATH "$PATH:${KOTLIN_HOME}/bin"
 
@@ -131,4 +152,5 @@ RUN set -o errexit -o nounset \
     && kotlinc -version \
     && mvn -v \
     && lein version \
+    && sbt version \
     && kscript -v
